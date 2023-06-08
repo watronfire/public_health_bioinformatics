@@ -78,12 +78,12 @@ workflow snippy_tree_wf {
         docker = snp_sites_docker,
         cpus = snp_sites_cpus,
         memory = snp_sites_memory,
-        disk_size = snp_sites_disk_size
+        disk_size = snp_sites_disk_size,
         # hardcoding some of the snp-sites optional outputs to false 
         output_vcf = false,
         output_phylip = false,
         output_pseudo_ref = false,
-        output_monomorphic = false,
+        output_monomorphic = false
     }
   }
   call iqtree2_task.iqtree2 {
