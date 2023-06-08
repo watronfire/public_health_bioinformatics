@@ -19,7 +19,7 @@ workflow snippy_tree_wf {
     Array[String] samplenames
     File reference_genome_file
     Boolean use_gubbins = true
-    Boolean? core_genome
+    Boolean core_genome = true
     String? data_summary_terra_project
     String? data_summary_terra_workspace
     String? data_summary_terra_table
@@ -67,25 +67,23 @@ workflow snippy_tree_wf {
         cpu = gubbins_cpu
     }
   }
-  # select first here is so that the optional boolean input 'core_genome' is coerced into being required
-  # if user does not specify core_genome or they specify false, this block will be skipped
-  # if user DOES specify core_genome as true, then the snp_sites task will be called/utilized
-  if (select_first([core_genome, false])) {
+  
+  if (core_genome) {
     call snp_sites_task.snp_sites as snp_sites {
       input:
-        # hardcoding some of the snp-sites optional outputs to false, 
         msa_fasta = select_first([gubbins.gubbins_polymorphic_fasta,snippy_core.snippy_full_alignment_clean]),
         output_name = tree_name,
         output_multifasta = true,
         allow_wildcard_bases = false,
         docker = snp_sites_docker,
+        cpus = snp_sites_cpus,
+        memory = snp_sites_memory,
+        disk_size = snp_sites_disk_size
+        # hardcoding some of the snp-sites optional outputs to false 
         output_vcf = false,
         output_phylip = false,
         output_pseudo_ref = false,
         output_monomorphic = false,
-        cpus = snp_sites_cpus,
-        memory = snp_sites_memory,
-        disk_size = snp_sites_disk_size
     }
   }
   call iqtree2_task.iqtree2 {
@@ -97,7 +95,6 @@ workflow snippy_tree_wf {
       memory = iqtree2_memory,
       disk_size = iqtree2_disk_size,
       iqtree2_model = iqtree2_model,
-      core_genome = core_genome,
       iqtree2_opts = iqtree2_opts,
       iqtree2_bootstraps = iqtree2_bootstraps
   }
