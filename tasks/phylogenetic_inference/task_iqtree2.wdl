@@ -20,16 +20,6 @@ task iqtree2 {
     # multiple sed statements to get down to a string that is just "version 2.1.2"
     iqtree2 --version | grep version | sed 's|.*version|version|;s| COVID-edition for Linux.*||' | tee VERSION
 
-    # if iqtree2_model is set by user, use that String input
-    if [ -n "~{iqtree2_model}" ]; then
-      echo "user provided an iqtree2_model string input, will use this for running iqtree2"
-      IQTREE2_MODEL="~{iqtree2_model}"
-    else
-      echo "User did not supply an iqtree2_model input, so we will use the default setting from iqtree2"
-
-    # sanity check
-    echo "IQTREE2_MODEL was set by user to:" ${IQTREE2_MODEL}
-
     # if there are more than 3 genomes in the dataset, run IQTree2
     numGenomes=`grep -o '>' ~{alignment} | wc -l`
     if [ "$numGenomes" -gt 3 ]; then
