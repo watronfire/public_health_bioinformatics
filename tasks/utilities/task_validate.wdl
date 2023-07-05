@@ -63,9 +63,6 @@ task compare_two_tsvs {
     Int disk_size = 10
   }
   command <<<
-    # too lazy to create a new docker image, this is not good practice
-    pip install pretty_html_table
-
     # check if a validation criteria table was provided
     if [[ ! -f ~{validation_criteria_tsv} ]]; then
       export SKIP_VALIDATION="true"
@@ -282,7 +279,7 @@ task compare_two_tsvs {
   CODE
   >>>
   runtime {
-    docker: "quay.io/theiagen/utility:1.2"
+    docker: "quay.io/theiagen/terra-tools:2023-06-21"
     memory: "4 GB"
     cpu: 2
     disks:  "local-disk " + disk_size + " HDD"
