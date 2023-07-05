@@ -37,16 +37,16 @@ workflow theiareport {
         ignore_columns = ignore_columns
     }
   }
-  call report_task.collate_reports {
+  call report_task.aggregate_reports {
     input:
       report_name = report_name,
       individual_reports = make_individual_report.individual_report
   }
   # call report_task.make_pdf {
   #   input:
-  #     analyst_name = analyst_name,
   #     report_name = report_name,
-  #     individual_reports = make_individual_report.individual_report
+  #     individual_reports = make_individual_report.individual_report,
+  #     output_types = make_individual_report.output_types
   # }
   call versioning_task.version_capture {
   }
@@ -54,7 +54,7 @@ workflow theiareport {
     String theiareport_version = version_capture.phb_version
     String theiareport_date = version_capture.date
     Array[File] individual_reports = make_individual_report.individual_report
-    File collated_reports = collate_reports.collated_reports
+    File aggregated_reports = aggregate_reports.aggregated_reports
    # File pdf_report = make_pdf.pdf_report
   }
 }
