@@ -8,9 +8,9 @@ workflow theiareport {
   input {
     # data location
     String terra_table_name
-    String terra_workspace_name
-    String terra_project_name 
-    #File terra_table
+    #String terra_workspace_name
+    #String terra_project_name 
+    File terra_table
     Array[String] samplenames
     String analyst_name
     String report_name
@@ -18,17 +18,17 @@ workflow theiareport {
     String? additional_columns # comma-separated list of additional values to report
     String? ignore_columns # comma-separated list of columns to not report
   }
-  call download_task.download_terra_table {
-    input:
-      terra_table_name = terra_table_name,
-      terra_workspace_name = terra_workspace_name,
-      terra_project_name = terra_project_name
-  }
+  # call download_task.download_terra_table {
+  #   input:
+  #     terra_table_name = terra_table_name,
+  #     terra_workspace_name = terra_workspace_name,
+  #     terra_project_name = terra_project_name
+  # }
   scatter (sample in samplenames) {
     call report_task.make_individual_report {
       input:
-        terra_table = download_terra_table.terra_table,
-        #terra_table = terra_table,
+        #terra_table = download_terra_table.terra_table,
+        terra_table = terra_table,
         terra_table_name = terra_table_name,
         samplename = sample,
         analyst_name = analyst_name,
@@ -42,12 +42,13 @@ workflow theiareport {
       report_name = report_name,
       individual_reports = make_individual_report.individual_report
   }
-  # call report_task.make_pdf {
-  #   input:
-  #     report_name = report_name,
-  #     individual_reports = make_individual_report.individual_report,
-  #     output_types = make_individual_report.output_types
-  # }
+  call report_task.make_pdf {
+    input:
+      report_name = report_name,
+      individual_reports = make_individual_report.individual_report,
+      output_types = make_individual_report.output_types,
+      samplenames = samplenames
+  }
   call versioning_task.version_capture {
   }
   output {
@@ -55,6 +56,6 @@ workflow theiareport {
     String theiareport_date = version_capture.date
     Array[File] individual_reports = make_individual_report.individual_report
     File aggregated_reports = aggregate_reports.aggregated_reports
-   # File pdf_report = make_pdf.pdf_report
+    File pdf_report = make_pdf.pdf_report
   }
 }

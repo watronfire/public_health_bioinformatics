@@ -53,7 +53,7 @@ task make_individual_report {
     default_qc = ["num_reads_raw1", "num_reads_raw2", "num_reads_clean1", "num_reads_clean2", "r1_mean_q_raw", "r2_mean_q_raw", "combined_mean_q_raw", "combined_mean_q_clean", "r1_mean_readlength_raw", "r2_mean_readlength_raw", "combined_mean_readlength_raw", "combined_mean_readlength_clean", "midas_docker", "midas_primary_genus", "midas_secondary_genus", "midas_secondary_genus_abundance", "assembly_length", "number_contigs", "quast_gc_percent", "quast_version", "est_coverage_raw", "est_coverage_clean", "busco_version", "busco_results", "ani_mummer_version", "ani_highest_percent", "ani_top_species_match"]
 
     # columns to hide in the output tables but still needed for proper creation
-    hidden_outputs =  ["~{terra_table_name}_id", "analyst_name"]
+    hidden_outputs =  ["sample", "analyst_name"]
 
     # user-supplied columns
     additional_qc = "~{qc_columns}".split(",")
@@ -64,12 +64,12 @@ task make_individual_report {
     # read exported Terra table into pandas
     table = pd.read_csv("~{terra_table}", delimiter='\t', header=0, dtype={"~{terra_table_name}_id": 'str'}) # ensure sample_id is always a string
 
-    # insert analyst name into the table
+    # insert analyst name into the table and rename sample ID column
     table["analyst_name"] = "~{analyst_name}"
+    table = table.rename(columns={"~{terra_table_name}_id": "sample"})
 
-    # extract the sample to report on and rename ID column
-    row = table[table["~{terra_table_name}_id"] == "~{samplename}"]
-    row = row.rename(columns={"~{terra_table_name}_id": "sample"})
+    # extract the sample to report on
+    row = table[table["sample"] == "~{samplename}"]
 
     # determine which organism-specific columns to use
     if row["gambit_predicted_taxon"].iloc[0] not in organism_output_dictionary.keys():
@@ -105,25 +105,28 @@ task make_individual_report {
 
         # specify what kind of output it is
         if (column in standard_outputs) or (column in additional_cols):
-          output_type[column] = "standard"
+          print("found)")
+          output_type[column] = ["standard"]
+          print(output_type[column])
         elif (column in default_qc) or (column in additional_qc):
-          output_type[column] = "qc"
+          output_type[column] = ["qc"]
         elif column in organism_specific:
-          output_type[column] = "organism"
+          output_type[column] = ["organism"]
         elif column in workflow_version_outputs:
-          output_type[column] = "workflow versioning"
+          output_type[column] = ["workflow versioning"]
         elif column in hidden_outputs:
-          output_type[column] = "hide"
+          output_type[column] = ["hide"]
         else:
-          output_type[column] = "unclassified"
+          output_type[column] = ["unclassified"]
 
       elif column not in workflow_version_outputs:
         final_row[column] = ""
-        output_type[column] = "unclassified"
+        output_type[column] = ["unclassified"]
       else: # it's a workflow version output for a different workflow and should be dropped
         final_row = final_row.drop(column, axis=1)
         output_type = output_type.drop(column, axis=1)
 
+    print(output_type)
     # write row to file
     final_row.to_csv("~{samplename}.csv", sep = ',', index=False)
 
@@ -197,50 +200,59 @@ task make_pdf {
     python3 <<CODE
     import pandas as pd
     import os
+    import pdfkit as pdf
     from datetime import date
-    from pretty_html_table import build_table
 
     # create lists from the input arrays
     samples = "~{sep="*" samplenames}".split("*")
     reports = "~{sep="*" individual_reports}".split("*")
     output_types = "~{sep="*" output_types}".split("*")
 
+    print(reports)
+    print(output_types)
+
     # create a single html file
     html_output = "<!DOCTYPE html><html>"
     # add a zebra stripe in the tables
-    html_output += "table{border-collapse: collapse;width: 100%;} th, td{text-align: left; padding: 8px;} tr:nth-child(even){background-color: #EDEDED;}</style>"
+    html_output += "<style>table{border-collapse: collapse;width: 100%;} th, td{text-align: left; padding: 8px;} tr:nth-child(even){background-color: #EDEDED;}</style>"
 
     # loop through each individual sample
     for entity in samples:
-      filename = entity + ".csv"
-      output_type = entity + "_output_types.csv"
+      csv_string = entity + ".csv"
+      output_type_string = entity + "_output_types.csv"
 
-      table = pd.read_csv(filename, delimiter='\t', header=0, dtype={"sample": 'str'}) # ensure sample_id is always a string
-      types = pd.read_csv(output_type, delimiter='\t', header=0, dtype={"sample": 'str'})
+      # extract full filepath from file name
+      filename = [s for s in reports if csv_string in s]
+      output_type = [s for s in output_types if output_type_string in s]
 
-      # create the html for a single sample
-    
-      html_output += "<body style=\"page-break-before: always;\"><h1>" + table["sample"] + "</h1>"
-      html_output += "<h2>Report generated by " + table["analyst_name"] + " on " + str(date.today().isoformat()) + "</h2>"
-      html_output += "<h3>Organism: " + table["gambit_predicted_taxon"] + "</h3>"
+      table = pd.read_csv(filename[0], header=0, dtype={"sample": 'str'}) # ensure sample_id is always a string
+      types = pd.read_csv(output_type[0], header=0, dtype={"sample": 'str'})
+
+
+      ### TO-DO: FIX PAGE BREAK
+      html_output += "<body style=\"page-break-after: always;\"><h1>" + table["sample"][0] + "</h1>"
+      html_output += "<h2>Report generated by " + table["analyst_name"][0] + " on " + str(date.today().isoformat()) + "</h2>"
+      html_output += "<h3>Organism: " + table["gambit_predicted_taxon"][0] + "</h3>"
  
       # create empty strings in case there is no columns for that category
       qc_html_table = ""
       standard_html_table = ""
       organism_html_table = ""
+      unclassified_html_table = ""
+      version_information = ""
     
       # iterate through the columns to separate them into their output types and generate a table
       for column in table.columns:
-        if types[column] == "qc":
-          qc_html_table += "<tr><th>" + column + "</th><td>" + str(table[column]) + "</td></tr>"
-        elif types[column] == "standard":
-          standard_html_table += "<tr><th>" + column + "</th><td>" + str(table[column]) + "</td></tr>"
-        elif types[column] == "organism":
-          organism_html_table += "<tr><th>" + column + "</th><td>" + str(table[column]) + "</td></tr>"
-        elif types[column] == "unclassified":
-          unclassified_html_table += "<tr><th>" + column + "</th><td>" + str(table[column]) + "</td></tr>"
-        elif types[column] == "workflow versioning"
-          version_information += "<p>Workflow version: " + str(table[column]) + "<p>"
+        if types[column][0] == "qc":
+          qc_html_table += "<tr><th>" + column + "</th><td>" + str(table[column][0]) + "</td></tr>"
+        elif types[column][0] == "standard":
+          standard_html_table += "<tr><th>" + column + "</th><td>" + str(table[column][0]) + "</td></tr>"
+        elif types[column][0] == "organism":
+          organism_html_table += "<tr><th>" + column + "</th><td>" + str(table[column][0]) + "</td></tr>"
+        elif types[column][0] == "unclassified":
+          unclassified_html_table += "<tr><th>" + column + "</th><td>" + str(table[column][0]) + "</td></tr>"
+        elif types[column][0] == "workflow versioning":
+          version_information += "<p>Workflow version: " + str(table[column][0]) + "<p>"
       
       html_output += "<h3>QC metrics:</h3>"
       html_output += "<table style=\"width: auto\">" + qc_html_table + "</table>"
@@ -248,12 +260,16 @@ task make_pdf {
       html_output += "<h3>Standard outputs:</h3>"
       html_output += "<table style=\"width: auto\">" + qc_html_table + "</table>"
 
-      html_output += "<h3>Organism-specific outputs:</h3>"
-      html_output += "<table style=\"width: auto\">" + organism_html_table + "</table>"
+      if len(organism_html_table) != 0:
+        html_output += "<h3>Organism-specific outputs:</h3>"
+        html_output += "<table style=\"width: auto\">" + organism_html_table + "</table>"
 
-      html_output += "<h3>Unclassified outputs:</h3>"
-      html_output += "<table style=\"width: auto\">" + unclassified_html_table + "</table>"
+      if len(unclassified_html_table) != 0:
+        html_output += "<h3>Unclassified outputs:</h3>"
+        html_output += "<table style=\"width: auto\">" + unclassified_html_table + "</table>"
       
+      html_output += version_information
+
       html_output += "</body>"
 
     html_output += "</html>"
@@ -263,7 +279,7 @@ task make_pdf {
 
     # save to output file
     with open(out_html_name, "w") as outfile:
-      outfile.write(html_output)
+      outfile.write(''.join(html_output))
 
     # convert to pdf
     options = {
@@ -274,6 +290,7 @@ task make_pdf {
       'margin-left': '0.25in'
     }
 
+    # TO-DO: FIX VERSIONING OUTPUTS
     output_pdf = pdf.from_file(out_html_name, out_pdf_name, options=options)
 
     CODE
@@ -283,7 +300,7 @@ task make_pdf {
     File html_report = "~{report_name}.html"
   }
   runtime {
-    docker: "quay.io/theiagen/terra-tools:2023-06-21"
+    docker: "quay.io/theiagen/terra-tools:2023-07-05"
     memory: "5 GB"
     cpu: 2
     disks: "local-disk " + disk_size + " HDD"
