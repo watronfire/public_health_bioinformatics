@@ -17,6 +17,7 @@ workflow theiareport {
     String? qc_columns # comma-separated list of additional QC values to report
     String? additional_columns # comma-separated list of additional values to report
     String? ignore_columns # comma-separated list of columns to not report
+    String? run_id_column # column name of the run_id for the samples 
   }
   # call download_task.download_terra_table {
   #   input:
@@ -34,7 +35,8 @@ workflow theiareport {
         analyst_name = analyst_name,
         qc_columns = qc_columns,
         additional_columns = additional_columns,
-        ignore_columns = ignore_columns
+        ignore_columns = ignore_columns,
+        run_id_column = run_id_column
     }
   }
   call report_task.aggregate_reports {
