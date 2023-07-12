@@ -11,7 +11,7 @@ task download_terra_table {
     Int disk_size = 10
   }
   command <<<
-    python3 /scripts/export_large_tsv/export_large_tsv.py --project ~{terra_project_name} --workspace ~{terra_workspace_name} --entity_type ~{terra_table_name} --tsv_filename "temp.tsv"
+    python3 /scripts/export_large_tsv/export_large_tsv.py --project ~{terra_project_name} --workspace ~{terra_workspace_name} --entity_type ~{terra_table_name} --tsv_filename "~{terra_table_name}.tsv"
   >>>
   output {
     File terra_table = "~{terra_table_name}.tsv"
