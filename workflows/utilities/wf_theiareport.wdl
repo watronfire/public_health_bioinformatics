@@ -8,9 +8,9 @@ workflow theiareport {
   input {
     # data location
     String terra_table_name
-    String terra_workspace_name
-    String terra_project_name 
-    #File terra_table
+    #String terra_workspace_name
+    #String terra_project_name 
+    File terra_table
     Array[String] samplenames
     String analyst_name
     String report_name
@@ -19,17 +19,17 @@ workflow theiareport {
     String? ignore_columns # comma-separated list of columns to not report
     String? run_id_column # column name of the run_id for the samples 
   }
-  call download_task.download_terra_table {
-    input:
-      terra_table_name = terra_table_name,
-      terra_workspace_name = terra_workspace_name,
-      terra_project_name = terra_project_name
-  }
+  # call download_task.download_terra_table {
+  #   input:
+  #     terra_table_name = terra_table_name,
+  #     terra_workspace_name = terra_workspace_name,
+  #     terra_project_name = terra_project_name
+  # }
   scatter (sample in samplenames) {
     call report_task.make_individual_report {
       input:
-        terra_table = download_terra_table.terra_table,
-        #terra_table = terra_table,
+        #terra_table = download_terra_table.terra_table,
+        terra_table = terra_table,
         terra_table_name = terra_table_name,
         samplename = sample,
         analyst_name = analyst_name,
