@@ -151,6 +151,59 @@ task make_individual_report {
   }
 }
 
+task make_species_report {
+  meta {
+    description: "Generate species specific report for a single sample"
+  }
+  input {
+    File terra_table
+    String terra_table_name
+    String samplename
+    String analyst_name
+    String? qc_columns
+    String? additional_columns
+    String? ignore_columns
+    String? run_id_column
+    String theiareport_uri='http://10.128.15.194:5000'
+
+    Int disk_size = 100
+  }
+  command <<<
+    python3 <<CODE
+    import pandas as pd
+    import numpy as np
+    import os
+
+    ### Processing of data
+    # read the exported Terra table into pandas
+    table = pd.read_csv("~{terra_table}", delimiter='\t', header=0, dtype={"~{terra_table_name}_id": 'str'}) # ensure sample_id is always a string
+    table["analyst_name"] = "~{analyst_name}"
+    table = table.rename(columns={"~{terra_table_name}_id": "sample"})
+    sample_row = table[table["sample"] == "~{samplename}"]
+
+    # output dataframe as json
+    sample_row.to_json("~{samplename}.json", orient="records")
+    #POST json directly to theiareport service - do this properly in python later
+    os.system("curl -X POST -H 'Content-Type: application/json' -d '" + sample_row.to_json(orient="records") + "' -o ~{samplename}.pdf ~{theiareport_uri}/report/generic/pdf ")
+    os.system("curl -X POST -H 'Content-Type: application/json' -d '" + sample_row.to_json(orient="records") + "' -o ~{samplename}.html ~{theiareport_uri}/report/generic ")
+
+    CODE
+  >>>
+  output {
+    File species_report_json = "~{samplename}.json" # this is for internal use for testing only
+    File species_report_html = "~{samplename}.html"
+    File species_report_pdf = "~{samplename}.pdf"
+  }
+  runtime {
+    docker: "quay.io/theiagen/terra-tools:2023-06-21"
+    memory: "2 GB"
+    cpu: 2
+    disks: "local-disk " + disk_size + " HDD"
+    disk: disk_size + " GB"
+    dx_instance_type: "mem1_ssd1_v2_x2"
+  }
+}
+
 task aggregate_reports {
   meta {
     description: "Combine individual reports into a single, larger report"

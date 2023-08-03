@@ -39,6 +39,16 @@ workflow theiareport {
         run_id_column = run_id_column
     }
   }
+  call report_task.make_species_report {
+    input:
+      terra_table = download_terra_table.terra_table,
+      terra_table_name = terra_table_name,
+      analyst_name = analyst_name,
+      qc_columns = qc_columns,
+      additional_columns = additional_columns,
+      ignore_columns = ignore_columns,
+      run_id_column = run_id_column
+  }
   call report_task.aggregate_reports {
     input:
       report_name = report_name,
