@@ -164,7 +164,7 @@ task make_species_report {
     String? additional_columns
     String? ignore_columns
     String? run_id_column
-    String theiareport_uri='http://10.128.15.194:5000'
+    String theiareport_uri='http://10.128.15.194:5000/report/species/'
 
     Int disk_size = 100
   }
@@ -175,23 +175,24 @@ task make_species_report {
     import os
 
     ### Processing of data
-    # read the exported Terra table into pandas
     table = pd.read_csv("~{terra_table}", delimiter='\t', header=0, dtype={"~{terra_table_name}_id": 'str'}) # ensure sample_id is always a string
     table["analyst_name"] = "~{analyst_name}"
     table = table.rename(columns={"~{terra_table_name}_id": "sample"})
     sample_row = table[table["sample"] == "~{samplename}"]
 
+    # Move elsewhere later - flu isnt in the gambit DB
+    if 'abricate_flu_database' in sample_row.columns and sample_row["gambit_predicted_taxon"].iloc[0] != "":
+      sample_row["gambit_predicted_taxon"] = 'Influenza A virus'
+
     # output dataframe as json
     sample_row.to_json("~{samplename}.json", orient="records")
     #POST json directly to theiareport service - do this properly in python later
-    os.system("curl -X POST -H 'Content-Type: application/json' -d '" + sample_row.to_json(orient="records") + "' -o ~{samplename}.pdf ~{theiareport_uri}/report/generic/pdf ")
-    os.system("curl -X POST -H 'Content-Type: application/json' -d '" + sample_row.to_json(orient="records") + "' -o ~{samplename}.html ~{theiareport_uri}/report/generic ")
+    os.system("curl -X POST -H 'Content-Type: application/json' -d '" + sample_row.to_json(orient="records") + "' -o ~{samplename}.pdf ~{theiareport_uri}/pdf ")
 
     CODE
   >>>
   output {
     File species_report_json = "~{samplename}.json" # this is for internal use for testing only
-    File species_report_html = "~{samplename}.html"
     File species_report_pdf = "~{samplename}.pdf"
   }
   runtime {
