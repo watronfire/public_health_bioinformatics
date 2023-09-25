@@ -238,3 +238,8 @@ workflows:
    primaryDescriptorPath: /workflows/phylogenetics/wf_usher.wdl
    testParameterFiles:
     - empty.json
+ - name: Benchmark_Dehosting_Illumina_PE_PHB
+   subclass: WDL
+   primaryDescriptorPath: /workflows/utilities/benchmarks/wf_benchmark_host_removal.wdl
+   testParameterFiles:
+    - empty.json
