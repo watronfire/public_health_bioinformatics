@@ -91,6 +91,7 @@ workflow benchmark_host_removal_pe {
     String kraken2_docker = kraken2_raw.kraken2_docker
     File kraken2_report_raw = kraken2_raw.kraken2_report
     Int read_pairs_raw = count_reads_raw.read_count_pairs
+    Float kraken2_percent_human_raw = kraken2_raw.kraken2_percent_human
     ## hostile
     Float kraken2_percent_human_hostile = kraken2_clean_hostile.kraken2_percent_human
     File kraken2_report_hostile = kraken2_clean_hostile.kraken2_report
