@@ -23,7 +23,7 @@ task ncbi_scrub_pe {
       read1_unzip=~{read1}
     fi
 
-    # dehost reads
+    # dehost forward reads
     /opt/scrubber/scripts/scrub.sh -n ${read1_unzip} |& tail -n1 | awk -F" " '{print $1}' > FWD_SPOTS_REMOVED
 
     # gzip dehosted forward reads
@@ -38,7 +38,7 @@ task ncbi_scrub_pe {
       read2_unzip=~{read2}
     fi
 
-    # dehost reads
+    # dehost reverse reads
     /opt/scrubber/scripts/scrub.sh -n ${read2_unzip} |& tail -n1 | awk -F" " '{print $1}' > REV_SPOTS_REMOVED
 
     # gzip dehosted reverse reads
@@ -84,10 +84,10 @@ task ncbi_scrub_se {
       read1_unzip=~{read1}
     fi
 
-    # dehost reads
+    # dehost forward reads
     /opt/scrubber/scripts/scrub.sh -n ${read1_unzip} |& tail -n1 | awk -F" " '{print $1}' > FWD_SPOTS_REMOVED
 
-    # gzip dehosted reads
+    # gzip dehosted forward reads
     gzip ${read1_unzip}.clean -c > ~{samplename}_R1_dehosted.fastq.gz
   >>>
   output {
@@ -105,7 +105,6 @@ task ncbi_scrub_se {
     maxRetries: 3
   }
 }
-
 
 task ncbi_scrub_pe_v2 {
   input {
