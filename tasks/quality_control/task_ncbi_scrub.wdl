@@ -122,6 +122,22 @@ task ncbi_scrub_pe_v2 {
     # unzip read files as scrub tool does not take in .gz fastq files, and interleave them
     paste <(zcat ~{read1} | paste - - - -) <(zcat ~{read2} | paste - - - -) | tr '\t' '\n' > interleaved.fastq
 
+    # Usage: scrub.sh [OPTIONS] [file.fastq] 
+    # OPTIONS:
+    #     -i <input_file>; Input Fastq File.
+    #     -o <output_file>; Save cleaned sequence reads to file, or set to - for stdout.
+    #             NOTE: When stdin is used, output is stdout by default.
+    #     -p <number> Number of threads to use.
+    #     -d <database_path>; Specify a database other than default to use.
+    #     -x ; Remove spots instead of default 'N' replacement.
+    #             NOTE: Now by default sequence length of identified spots replaced with 'N'.
+    #     -r ; Save identified spots to <input_file>.spots_removed.
+    #     -u <user_named_file>; Save identified spots to <user_named_file>.
+    #             NOTE: Required with -r if output is stdout, otherwise optional.
+    #     -t ; Run test.
+    #     -s ; Input is (collated) interleaved paired-end(read) file AND you wish both reads masked or removed.
+    #     -h ; Display this message.
+
     # dehost reads: -s reads are paired-end and both are to be masked/removed; -x removes reads instead of masking them
     /opt/scrubber/scripts/scrub.sh -s -x -i interleaved.fastq |& tail -n1 | awk -F" " '{print $1}' > SPOTS_REMOVED
 
@@ -168,6 +184,22 @@ task ncbi_scrub_se_v2 {
     else
       read1_unzip=~{read1}
     fi
+
+    # Usage: scrub.sh [OPTIONS] [file.fastq] 
+    # OPTIONS:
+    #     -i <input_file>; Input Fastq File.
+    #     -o <output_file>; Save cleaned sequence reads to file, or set to - for stdout.
+    #             NOTE: When stdin is used, output is stdout by default.
+    #     -p <number> Number of threads to use.
+    #     -d <database_path>; Specify a database other than default to use.
+    #     -x ; Remove spots instead of default 'N' replacement.
+    #             NOTE: Now by default sequence length of identified spots replaced with 'N'.
+    #     -r ; Save identified spots to <input_file>.spots_removed.
+    #     -u <user_named_file>; Save identified spots to <user_named_file>.
+    #             NOTE: Required with -r if output is stdout, otherwise optional.
+    #     -t ; Run test.
+    #     -s ; Input is (collated) interleaved paired-end(read) file AND you wish both reads masked or removed.
+    #     -h ; Display this message.
 
     # dehost reads: -x removes reads instead of masking them
     /opt/scrubber/scripts/scrub.sh -x -i ${read1_unzip} |& tail -n1 | awk -F" " '{print $1}' > FWD_SPOTS_REMOVED
