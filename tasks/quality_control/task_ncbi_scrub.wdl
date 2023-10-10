@@ -123,7 +123,7 @@ task ncbi_scrub_pe_v2 {
     paste <(zcat ~{read1} | paste - - - -) <(zcat ~{read2} | paste - - - -) | tr '\t' '\n' > interleaved.fastq
 
     # dehost reads: -s reads are paired-end and both are to be masked/removed; -x removes reads instead of masking them
-    /opt/scrubber/scripts/scrub.sh -i interleaved.fastq -s -x |& tail -n1 | awk -F" " '{print $1}' > SPOTS_REMOVED
+    /opt/scrubber/scripts/scrub.sh -s -x -i interleaved.fastq |& tail -n1 | awk -F" " '{print $1}' > SPOTS_REMOVED
 
     # split interleaved reads and compress files
     paste - - - - - - - - < interleaved.fastq.clean \
@@ -170,7 +170,7 @@ task ncbi_scrub_se_v2 {
     fi
 
     # dehost reads: -x removes reads instead of masking them
-    /opt/scrubber/scripts/scrub.sh -i ${read1_unzip} -x |& tail -n1 | awk -F" " '{print $1}' > FWD_SPOTS_REMOVED
+    /opt/scrubber/scripts/scrub.sh -x -i ${read1_unzip} |& tail -n1 | awk -F" " '{print $1}' > FWD_SPOTS_REMOVED
 
     # gzip dehosted reads
     gzip ${read1_unzip}.clean -c > ~{samplename}_R1_dehosted.fastq.gz
