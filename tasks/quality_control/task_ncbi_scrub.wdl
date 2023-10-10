@@ -169,8 +169,8 @@ task ncbi_scrub_se_v2 {
       read1_unzip=~{read1}
     fi
 
-    # dehost reads
-    /opt/scrubber/scripts/scrub.sh -i ${read1_unzip} |& tail -n1 | awk -F" " '{print $1}' > FWD_SPOTS_REMOVED
+    # dehost reads: -x removes reads instead of masking them
+    /opt/scrubber/scripts/scrub.sh -i ${read1_unzip} -x |& tail -n1 | awk -F" " '{print $1}' > FWD_SPOTS_REMOVED
 
     # gzip dehosted reads
     gzip ${read1_unzip}.clean -c > ~{samplename}_R1_dehosted.fastq.gz
