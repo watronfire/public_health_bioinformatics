@@ -14,7 +14,7 @@ task ncbi_scrub_pe {
     # date and version control
     date | tee DATE
 
-    # unzip fwd file as scrub tool does not take in .gz fastq files
+    # unzip forward read file as the scrub tool does not take in .gz fastq files
     if [[ "~{read1}" == *.gz ]]
     then
       gunzip -c ~{read1} > r1.fastq
@@ -24,13 +24,12 @@ task ncbi_scrub_pe {
     fi
 
     # dehost reads
-    /opt/scrubber/scripts/scrub.sh -n ${read1_unzip} |& tail -n1 | awk -F" " '{print $1}' > FWD_SPOTS_REMOVED
+    /opt/scrubber/scripts/scrub.sh -i ${read1_unzip} |& tail -n1 | awk -F" " '{print $1}' > FWD_SPOTS_REMOVED
 
-    # gzip dehosted reads
+    # gzip dehosted forward reads
     gzip ${read1_unzip}.clean -c > ~{samplename}_R1_dehosted.fastq.gz
 
-    # do the same on read
-    # unzip file if necessary
+    # unzip reverse read file if necessary
     if [[ "~{read2}" == *.gz ]]
     then
       gunzip -c ~{read2} > r2.fastq
@@ -40,9 +39,9 @@ task ncbi_scrub_pe {
     fi
 
     # dehost reads
-    /opt/scrubber/scripts/scrub.sh -n ${read2_unzip} |& tail -n1 | awk -F" " '{print $1}' > REV_SPOTS_REMOVED
+    /opt/scrubber/scripts/scrub.sh -i ${read2_unzip} |& tail -n1 | awk -F" " '{print $1}' > REV_SPOTS_REMOVED
 
-    # gzip dehosted reads
+    # gzip dehosted reverse reads
     gzip ${read2_unzip}.clean -c > ~{samplename}_R2_dehosted.fastq.gz
   >>>
   output {
@@ -86,7 +85,7 @@ task ncbi_scrub_se {
     fi
 
     # dehost reads
-    /opt/scrubber/scripts/scrub.sh -n ${read1_unzip} |& tail -n1 | awk -F" " '{print $1}' > FWD_SPOTS_REMOVED
+    /opt/scrubber/scripts/scrub.sh -i ${read1_unzip} |& tail -n1 | awk -F" " '{print $1}' > FWD_SPOTS_REMOVED
 
     # gzip dehosted reads
     gzip ${read1_unzip}.clean -c > ~{samplename}_R1_dehosted.fastq.gz
