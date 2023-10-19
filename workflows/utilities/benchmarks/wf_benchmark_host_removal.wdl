@@ -77,12 +77,7 @@ workflow benchmark_host_removal_pe {
       }
     }
 
-    call utils_task.count_reads as count_reads_hrrt_v1 {
-      input:
-        read1 = hrrt_v1.read1_dehosted,
-        read2 = hrrt_v1.read2_dehosted,
-        samplename = samplename
-    }
+    Int read_pairs_hrrt_v1_count = count_reads_raw.read_count_pairs - hrrt_v1.read1_human_spots_removed
 
     call utils_task.count_reads as count_reads_hrrt_v2 {
       input:
@@ -91,7 +86,7 @@ workflow benchmark_host_removal_pe {
         samplename = samplename
     }
 
-    if (count_reads_hrrt_v1.read_count_pairs > 0) {
+    if (read_pairs_hrrt_v1_count > 0) {
       call kraken2_task.kraken2_standalone as kraken2_clean_hrrt_v1 {
         input:
           samplename = samplename,
@@ -133,7 +128,7 @@ workflow benchmark_host_removal_pe {
     ## hrrt - v1
     Float? kraken2_percent_human_hrrt_v1 = kraken2_clean_hrrt_v1.kraken2_percent_human
     File? kraken2_report_hrrt_v1 = kraken2_clean_hrrt_v1.kraken2_report
-    Int? read_pairs_hrrt_v1 = count_reads_hrrt_v1.read_count_pairs
+    Int? read_pairs_hrrt_v1 = read_pairs_hrrt_v1_count
     ## hrrt - v2
     Float? kraken2_percent_human_hrrt_v2 = kraken2_clean_hrrt_v2.kraken2_percent_human
     File? kraken2_report_hrrt_v2 = kraken2_clean_hrrt_v2.kraken2_report
