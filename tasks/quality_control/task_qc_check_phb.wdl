@@ -381,10 +381,10 @@ task qc_check_phb {
             qc_note, qc_status = compare(qc_note, "sc2_s_gene_percent_coverage", float(~{sc2_s_gene_percent_coverage}), ">=", float(taxon_df["sc2_s_gene_percent_coverage"][0]))
             qc_check_metrics.remove("sc2_s_gene_percent_coverage") 
 
-        if ("vadr_num_alerts" in qc_check_metrics): # if this var is in the qc_check_metrics,
-          if ("~{vadr_num_alerts}"): # if vadr_num_alerts variable exists,
-            qc_note, qc_status = compare(qc_note, "vadr_num_alerts", int(~{vadr_num_alerts}), "<=", int(taxon_df["vadr_num_alerts"][0]))
-            qc_check_metrics.remove("vadr_num_alerts") 
+#        if ("vadr_num_alerts" in qc_check_metrics): # if this var is in the qc_check_metrics,
+#          if ("~{vadr_num_alerts}"): # if vadr_num_alerts variable exists,
+#            qc_note, qc_status = compare(qc_note, "vadr_num_alerts", int(~{vadr_num_alerts}), "<=", int(taxon_df["vadr_num_alerts"][0]))
+#            qc_check_metrics.remove("vadr_num_alerts") 
 
         if (len(qc_check_metrics) > 0):
           qc_status = "QC_ALERT"
