@@ -2,7 +2,7 @@ version 1.0
 
 task kmc {
   meta {
-    description: "Estimate genome size using KMC (https://github.com/refresh-bio/KMC)"
+    description: "Estimate genome length using KMC (https://github.com/refresh-bio/KMC)"
   }
   input {
     File read1
@@ -40,14 +40,14 @@ task kmc {
 
     # kmc_outputs is a mess of files that are not human readable
     # however, the stdout does produce some useful stats. 
-    #  the no. of unique counted k-mers can be used as an estimate of genome size
+    #  the no. of unique counted k-mers can be used as an estimate of genome length
     grep "unique counted k" LOG | tr -s ' ' | cut -d ' ' -f8 >> UNIQUE_COUNTED
 
     # extracting only the kmer statistics and writing to file:
     tail -n8 LOG > ~{samplename}_kmer_stats.txt
   >>>
   output {
-    Int est_genome_size = read_int("UNIQUE_COUNTED") 
+    Int est_genome_length = read_int("UNIQUE_COUNTED") 
     File kmer_stats = "~{samplename}_kmer_stats.txt"
     String kmc_version = read_string("VERSION")
   }

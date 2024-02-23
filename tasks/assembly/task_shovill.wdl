@@ -12,7 +12,7 @@ task shovill_pe {
 
     ## SHOVILL optional parameters
     ##  --depth [INT]           Sub-sample --R1/--R2 to this depth. Disable with --depth 0 (default: 150)
-    ##  --gsize [STRING]        Estimated genome size eg. 3.2M <blank=AUTODETECT> (default: '')
+    ##  --gsize [STRING]        Estimated genome length eg. 3.2M <blank=AUTODETECT> (default: '')
     ##  --minlen [INT]          Minimum contig length <0=AUTO> (default: 0)
     ##  --mincov [FLOAT]        Minimum contig coverage <0=AUTO> (default: 2)
     ##  --assembler [STRING]    Assembler: skesa velvet megahit spades (default: 'spades')
@@ -24,7 +24,7 @@ task shovill_pe {
     ##  --nocorr [BOOLEAN]      Disable post-assembly correction (default: OFF)
     
     Int? depth
-    String? genome_size
+    String? genome_length
     Int min_contig_length = 200
     Float? min_coverage
     String assembler = "skesa"
@@ -43,7 +43,7 @@ task shovill_pe {
       --R2 ~{read2_cleaned} \
       --minlen ~{min_contig_length} \
       ~{'--depth ' + depth} \
-      ~{'--gsize ' + genome_size} \
+      ~{'--gsize ' + genome_length} \
       ~{'--mincov ' + min_coverage} \
       ~{'--assembler ' + assembler} \
       ~{'--opts ' + assembler_options} \
@@ -90,7 +90,7 @@ task shovill_se {
 
     ## SHOVILL optional parameters
     ##  --depth [INT]           Sub-sample --R1/--R2 to this depth. Disable with --depth 0 (default: 150)
-    ##  --gsize [STRING]        Estimated genome size eg. 3.2M <blank=AUTODETECT> (default: '')
+    ##  --gsize [STRING]        Estimated genome length eg. 3.2M <blank=AUTODETECT> (default: '')
     ##  --minlen [INT]          Minimum contig length <0=AUTO> (default: 0)
     ##  --mincov [FLOAT]        Minimum contig coverage <0=AUTO> (default: 2)
     ##  --assembler [STRING]    Assembler: skesa velvet megahit spades (default: 'spades')
@@ -101,7 +101,7 @@ task shovill_se {
     ##  --nocorr [BOOLEAN]      Disable post-assembly correction (default: OFF)
 
     Int? depth
-    String? genome_size
+    String? genome_length
     Int min_contig_length = 200
     Float? min_coverage
     String assembler = "skesa"
@@ -118,7 +118,7 @@ task shovill_se {
       --se ~{read1_cleaned} \
       --minlen ~{min_contig_length} \
       ~{'--depth ' + depth} \
-      ~{'--gsize ' + genome_size} \
+      ~{'--gsize ' + genome_length} \
       ~{'--mincov ' + min_coverage} \
       ~{'--assembler ' + assembler} \
       ~{'--opts ' + assembler_options} \
