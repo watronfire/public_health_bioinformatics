@@ -20,14 +20,14 @@ workflow theiaeuk_illumina_pe {
   input {
     String samplename
     String seq_method = "ILLUMINA"
-    File read1
-    File read2
+    File read1_raw
+    File read2_raw
     Boolean call_rasusa = true
     Int min_reads = 30000
     # Edited default values
     Int min_basepairs = 45000000
-    Int min_genome_length = 9000000
-    Int max_genome_length = 178000000
+    Int min_genome_size = 9000000
+    Int max_genome_size = 178000000
     Int min_coverage = 10
     Int min_proportion = 40
     Int trim_minlen = 75
@@ -36,7 +36,7 @@ workflow theiaeuk_illumina_pe {
     Boolean skip_screen = false 
     File? qc_check_table
     String? expected_taxon
-    Int? genome_length 
+    Int? genome_size 
     Float subsample_coverage = 150 # default coverage for RASUSA is set to 150X
     Int cpu = 8
     Int memory = 16
@@ -49,24 +49,24 @@ workflow theiaeuk_illumina_pe {
   } 
   call screen.check_reads as raw_check_reads {
     input:
-      read1 = read1,
-      read2 = read2,
+      read1 = read1_raw,
+      read2 = read2_raw,
       min_reads = min_reads,
       min_basepairs = min_basepairs,
-      min_genome_length = min_genome_length,
-      max_genome_length = max_genome_length,
+      min_genome_size = min_genome_size,
+      max_genome_size = max_genome_size,
       min_coverage = min_coverage,
       min_proportion = min_proportion,
       skip_screen = skip_screen,
-      expected_genome_length = genome_length
+      expected_genome_size = genome_size
   }
   if (call_rasusa) {
     call rasusa.rasusa as rasusa_task {
       input:
-        read1 = read1,
-        read2 = read2,
+        read1 = read1_raw,
+        read2 = read2_raw,
         samplename = samplename,
-        genome_length = select_first([genome_length, raw_check_reads.est_genome_length]),
+        genome_size = select_first([genome_size,raw_check_reads.est_genome_length]),
         coverage = subsample_coverage
     }
   }  
@@ -74,8 +74,8 @@ workflow theiaeuk_illumina_pe {
     call read_qc.read_QC_trim_pe as read_QC_trim {
       input:
         samplename = samplename,
-        read1_raw = select_first([rasusa_task.read1_subsampled, read1]),
-        read2_raw = select_first([rasusa_task.read2_subsampled, read2]),
+        read1_raw = select_first([rasusa_task.read1_subsampled,read1_raw]),
+        read2_raw = select_first([rasusa_task.read2_subsampled,read2_raw]),
         trim_minlen = trim_minlen,
         trim_quality_trim_score = trim_quality_trim_score,
         trim_window_size = trim_window_size
@@ -86,12 +86,12 @@ workflow theiaeuk_illumina_pe {
         read2 = read_QC_trim.read2_clean,
         min_reads = min_reads,
         min_basepairs = min_basepairs,
-        min_genome_length = min_genome_length,
-        max_genome_length = max_genome_length,
+        min_genome_size = min_genome_size,
+        max_genome_size = max_genome_size,
         min_coverage = min_coverage,
         min_proportion = min_proportion,
         skip_screen = skip_screen,
-        expected_genome_length = genome_length
+        expected_genome_size = genome_size
     }
     if (clean_check_reads.read_screen=="PASS") {
       call shovill.shovill_pe {
@@ -111,10 +111,10 @@ workflow theiaeuk_illumina_pe {
       }
       call cg_pipeline_task.cg_pipeline as cg_pipeline_raw {
         input:
-          read1 = read1,
-          read2 = read2,
+          read1 = read1_raw,
+          read2 = read2_raw,
           samplename = samplename,
-          genome_length = select_first([quast.genome_length, clean_check_reads.est_genome_length]),
+          genome_length = select_first([quast.genome_length,clean_check_reads.est_genome_length]),
           cpu = cpu,
           memory = memory
       }
@@ -123,7 +123,7 @@ workflow theiaeuk_illumina_pe {
           read1 = read_QC_trim.read1_clean,
           read2 = read_QC_trim.read2_clean,
           samplename = samplename,
-          genome_length = select_first([quast.genome_length, clean_check_reads.est_genome_length]),
+          genome_length = select_first([quast.genome_length,clean_check_reads.est_genome_length]),
           cpu = cpu,
           memory = memory
       }

@@ -15,7 +15,7 @@ workflow read_QC_trim_ont {
   input {
     String samplename
     File read1
-    Int? genome_length
+    Int? genome_size
 
     String? workflow_series
 
@@ -69,7 +69,7 @@ workflow read_QC_trim_ont {
     } 
   }
   if ("~{workflow_series}" == "theiaprok") {
-    # kmc for genome length estimation
+    # kmc for genome size estimation
     call kmc_task.kmc {
       input:
         read1 = read1,
@@ -81,7 +81,7 @@ workflow read_QC_trim_ont {
         read1 = read1,
         samplename = samplename,
         coverage = 150,
-        genome_length = select_first([genome_length, kmc.est_genome_length])
+        genome_size = select_first([genome_size, kmc.est_genome_size])
     }
     # tiptoft for plasmid detection
     call tiptoft_task.tiptoft {
@@ -119,7 +119,7 @@ workflow read_QC_trim_ont {
    
     # theiaprok outputs
     # kmc outputs
-    Int? est_genome_length = kmc.est_genome_length
+    Int? est_genome_size = kmc.est_genome_size
     File? kmc_kmer_stats = kmc.kmer_stats
     String? kmc_version = kmc.kmc_version
     

@@ -6,7 +6,7 @@ task dragonflye {
     String samplename
     String? assembler # default is flye
     String? assembler_options # default ''
-    String? genome_length # default autodetect
+    String? genome_size # default autodetect
     File? illumina_read1 # illumina read1 fastq to use for polishing
     File? illumina_read2 # illumina read2 fastq to use for polishing 
     Boolean use_pilon_illumina_polisher = false # use polypolish by default
@@ -54,7 +54,7 @@ task dragonflye {
     # --reads for input nanopore fastq
     # --depth 0 disables sub-sampling of reads (performed with rasusa already)
     # --outdir indicates output directory
-    # --gsize indicates genome length; if this is not set it will autodetect size
+    # --gsize indicates genome size; if this is not set it will autodetect size
     # --cpus number of cpus to use
     # --ram try to keep RAM usage below this number
     # --nofilter disables read length filtering (performed with nanoq already)
@@ -66,7 +66,7 @@ task dragonflye {
       --reads ~{read1} \
       --depth 0 \
       --outdir dragonflye \
-      ~{'--gsize ' + genome_length} \
+      ~{'--gsize ' + genome_size} \
       --cpus ~{cpu} \
       --ram ${mem} \
       --nofilter \

@@ -72,21 +72,21 @@ workflow theiacov_ont {
       read1 = read1,
       min_reads = min_reads,
       min_basepairs = min_basepairs,
-      min_genome_length = min_genome_length,
-      max_genome_length = max_genome_length,
+      min_genome_size = min_genome_length,
+      max_genome_size = max_genome_length,
       min_coverage = min_coverage,
       skip_screen = skip_screen,
       skip_mash = skip_mash,
       workflow_series = "theiacov",
       organism = organism,
-      expected_genome_length = genome_length
+      expected_genome_size = genome_length
   }
   if (raw_check_reads.read_screen == "PASS") {
     call read_qc_trim_workflow.read_QC_trim_ont as read_qc_trim {
       input:
         read1 = read1,
         samplename = samplename,
-        genome_length = genome_length,
+        genome_size = genome_length,
         min_length = min_length,
         max_length = max_length,
         run_prefix = run_prefix,
@@ -98,14 +98,14 @@ workflow theiacov_ont {
         read1 = read_qc_trim.read1_clean,
         min_reads = min_reads,
         min_basepairs = min_basepairs,
-        min_genome_length = min_genome_length,
-        max_genome_length = max_genome_length,
+        min_genome_size = min_genome_length,
+        max_genome_size = max_genome_length,
         min_coverage = min_coverage,
         skip_screen = skip_screen,
         skip_mash = skip_mash,
         workflow_series = "theiacov",
         organism = organism,
-        expected_genome_length = genome_length
+        expected_genome_size = genome_length
     }
     if (clean_check_reads.read_screen == "PASS") {
       # assembly via artic_consensus for sars-cov-2 and HIV
@@ -165,13 +165,13 @@ workflow theiacov_ont {
         input:
           read1 = read1,
           samplename = samplename,
-          est_genome_length = select_first([genome_length, consensus_qc.number_Total])
+          est_genome_size = select_first([genome_length, consensus_qc.number_Total])
       }
       call nanoplot_task.nanoplot as nanoplot_clean {
         input:
           read1 = read_qc_trim.read1_clean,
           samplename = samplename,
-          est_genome_length = select_first([genome_length, consensus_qc.number_Total])
+          est_genome_size = select_first([genome_length, consensus_qc.number_Total])
       }
       if (organism == "sars-cov-2") {
         # sars-cov-2 specific tasks
